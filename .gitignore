@@ -1,0 +1,32 @@
+# Node Modules for both backend and frontend
+node_modules/
+
+# Build outputs for both backend and frontend
+dist/
+build/
+
+# Backend-specific files and folders
+backend/bin/
+backend/vendor/
+backend/log/
+backend/*.log
+backend/tmp/
+backend/.env
+backend/.env.local
+
+# Frontend-specific files
+frontend/*.log
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+/*.sublime-project
+/*.sublime-workspace
+
+# Tailwind and PostCSS caches
+postcss.config.js.map
+tailwind.config.js.map

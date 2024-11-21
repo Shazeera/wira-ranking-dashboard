@@ -1,0 +1,21 @@
+# Node modules
+/frontend/node_modules/
+
+# Build outputs
+/frontend/dist/
+/frontend/build/
+
+# Backend-related files
+/backend/bin/
+/backend/log/
+/backend/vendor/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
