@@ -1,5 +1,3 @@
-// main.go keluar
-
 package main
 
 import (
@@ -8,11 +6,11 @@ import (
     "strconv"
     "wira-ranking-dashboard/backend/controllers"
     "wira-ranking-dashboard/backend/utils"
-
     "github.com/gin-contrib/cors"
     "github.com/gin-gonic/gin"
     "gorm.io/driver/postgres"
     "gorm.io/gorm"
+    "path/filepath"
 )
 
 func main() {
@@ -31,7 +29,7 @@ func main() {
         log.Fatalf("Failed to migrate database: %v", err)
     }
 
-    // Generate fake data
+    // Generate fake data (only for development or testing)
     utils.GenerateFakeData(db)
 
     // Set up Gin router
@@ -39,16 +37,29 @@ func main() {
 
     // Enable CORS for frontend
     r.Use(cors.New(cors.Config{
-        AllowOrigins: []string{"http://localhost:8081"}, // Allow only your frontend
+        AllowOrigins: []string{
+            "http://localhost:8081",            // Frontend on localhost
+            "http://172.21.48.1:8081",         // If frontend is accessed through local IP
+            "http://172.21.48.x:8081",         // External devices accessing the frontend
+        },
         AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
         AllowHeaders: []string{"Origin", "Content-Type", "Authorization"},
     }))
 
-    // Define the /players route
+    // Serve static files from the "dist" directory under the "/static" URL path
+    r.Static("/static", "./frontend/wira-dashboard/dist/static")  // Update path if needed
+
+    // Serve the Vue.js index.html for the root URL
+    r.GET("/", func(c *gin.Context) {
+        // Serve the index.html page when visiting the root URL
+        c.File(filepath.Join("./frontend/wira-dashboard/dist", "index.html"))
+    })
+
+    // Define the /players route to handle player data fetching
     r.GET("/players", func(c *gin.Context) {
-        // Extract query parameters
-        pageStr := c.DefaultQuery("page", "1") // Default to page 1 if not provided
-        search := c.DefaultQuery("search", "") // Default to empty string if not provided
+        // Extract query parameters (page and search)
+        pageStr := c.DefaultQuery("page", "1")
+        search := c.DefaultQuery("search", "")
 
         // Parse 'page' parameter into an integer
         page, err := strconv.Atoi(pageStr)
@@ -59,13 +70,13 @@ func main() {
             return
         }
 
-        // Debugging: Log the incoming parameters
+        // Log the incoming parameters for debugging
         log.Printf("Received request: page=%d, search='%s'\n", page, search)
 
         // Call the controller function to fetch players and totalPages
         players, totalPages := controllers.GetPlayers(page, search, db)
 
-        // Respond with JSON containing players and total pages
+        // Respond with JSON containing players and totalPages
         c.JSON(http.StatusOK, gin.H{
             "players":    players,
             "totalPages": totalPages,
