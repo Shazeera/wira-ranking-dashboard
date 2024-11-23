@@ -44,8 +44,8 @@ func GenerateFakeData(db *gorm.DB) {
 
     rand.Seed(time.Now().UnixNano()) // Seed for random number generation
 
-    batchSize := 1000      // Number of records to log progress
-    totalAccounts := 10000 // Total number of accounts to generate
+    batchSize := 10000      // Number of records to log progress
+    totalAccounts := 100000 // Total number of accounts to generate
     usedEmails := make(map[string]bool) // Track unique emails
     testAccountCount := 100 // Number of accounts with "test" usernames
 
@@ -78,7 +78,7 @@ func GenerateFakeData(db *gorm.DB) {
         // Generate and insert score data for each character
         score := Score{
             CharID:      character.CharID,
-            RewardScore: rand.Intn(1000), // Random score between 0 and 1000
+            RewardScore: rand.Intn(10000), // Random score between 0 and 1000
         }
         if err := db.Create(&score).Error; err != nil {
             log.Printf("Failed to insert test score: %v\n", err)
@@ -124,7 +124,7 @@ func GenerateFakeData(db *gorm.DB) {
         // Generate and insert score data for each character
         score := Score{
             CharID:      character.CharID,
-            RewardScore: rand.Intn(1000), // Random score between 0 and 1000
+            RewardScore: rand.Intn(10000), // Random score between 0 and 1000
         }
         if err := db.Create(&score).Error; err != nil {
             log.Printf("Failed to insert random score: %v\n", err)
