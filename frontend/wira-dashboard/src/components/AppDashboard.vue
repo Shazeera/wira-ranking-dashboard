@@ -31,7 +31,7 @@
         <thead>
           <tr>
             <th class="px-4 py-2 border text-left">Rank</th>
-            <th class="px-4 py-2 border text-left">Player</th>
+            <th class="px-4 py-2 border text-left">Player Username</th>
             <th class="px-4 py-2 border text-left">Score</th>
           </tr>
         </thead>
