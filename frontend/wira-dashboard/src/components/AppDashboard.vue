@@ -76,7 +76,7 @@ export default {
       totalPages: 1,
       loading: false, // Loading state
       // Configurable backend URL for development and production
-      backendUrl: process.env.VUE_APP_BACKEND_URL || 'http://172.21.48.1:8080', // Update this to your backend address
+      backendUrl: process.env.VUE_APP_BACKEND_URL || 'http://172.21.48.1:8080', //  backend address
     };
   },
   methods: {
