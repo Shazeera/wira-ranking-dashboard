@@ -67,7 +67,7 @@ func GenerateFakeData(db *gorm.DB) {
         // Generate and insert character data for each test account
         character := Character{
             AccID:   account.AccID,
-            ClassID: uint(rand.Intn(5) + 1), // Random class ID between 1 and 5
+            ClassID: uint(rand.Intn(8) + 1), // Random class ID between 1 and 8
             Name:    fmt.Sprintf("Test Character %d", i), // Predictable character name
         }
         if err := db.Create(&character).Error; err != nil {
@@ -113,7 +113,7 @@ func GenerateFakeData(db *gorm.DB) {
         // Generate and insert character data for each account
         character := Character{
             AccID:   account.AccID,
-            ClassID: uint(rand.Intn(5) + 1), // Random class ID between 1 and 5
+            ClassID: uint(rand.Intn(8) + 1), // Random class ID between 1 and 8
             Name:    faker.Name(),
         }
         if err := db.Create(&character).Error; err != nil {
