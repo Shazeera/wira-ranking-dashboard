@@ -23,12 +23,13 @@ type Score struct {
     ScoreID     int `json:"score_id" gorm:"primaryKey"`
     CharID      int `json:"char_id"`
     RewardScore int `json:"reward_score"`
+
 }
 
 // Session model
 type Session struct {
-    SessionID       string    `json:"session_id" gorm:"primaryKey"`
+    SessionID       int    `json:"session_id" gorm:"primaryKey"`
+    AccID           int       `json:"acc_id"`
     SessionMetadata string    `json:"session_metadata"`
     ExpiryDatetime  time.Time `json:"expiry_datetime"`
-    
 }
