@@ -1,5 +1,5 @@
 package models
-
+//menjadi
 import (
     "gorm.io/gorm"
     "wira-ranking-dashboard/backend/utils"

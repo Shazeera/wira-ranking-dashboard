@@ -1,28 +1,30 @@
 package utils
-//jadi faker.go
+//menjadi
 import (
     "fmt"
     "log"
     "math/rand"
     "time"
-
     "github.com/bxcodec/faker/v3"
+    "golang.org/x/crypto/bcrypt"
     "gorm.io/gorm"
 )
 
 // Account represents the structure of an account in the database
 type Account struct {
-    AccID    uint   `gorm:"primaryKey"`
-    Username string `gorm:"type:varchar(255)"`
-    Email    string `gorm:"type:varchar(255);unique"`
+    AccID            uint   `gorm:"primaryKey"`
+    Username         string `gorm:"type:varchar(255)"`
+    Email            string `gorm:"type:varchar(255);unique"`
+    EncryptedPassword string `gorm:"type:varchar(255)"` 
+    SecretKey2FA      string `gorm:"type:varchar(255)"` 
 }
 
 // Character represents the structure of a character in the database
 type Character struct {
     CharID  uint   `gorm:"primaryKey"`
     AccID   uint   `gorm:"index"`
-    ClassID uint   `gorm:"type:int"`
-    Name    string `gorm:"type:varchar(255)"` // Added player name field
+    ClassID uint   `gorm:"type:int"`        
+    Name    string `gorm:"type:varchar(255)"` 
 }
 
 // Score represents the structure of a score in the database
@@ -31,31 +33,66 @@ type Score struct {
     CharID      uint `gorm:"index"`
     RewardScore int  `gorm:"type:int"`
 }
+
+// Session represents the structure of a session in the database
+type Session struct {
+    SessionID       string    `json:"session_id" gorm:"primaryKey"`
+    SessionMetadata string    `json:"session_metadata"`
+    ExpiryDatetime  time.Time `json:"expiry_datetime"`
+}
+
+// Player represents a player object for API responses
 type Player struct {
-    Username       string `json:"username"`
-    Email          string `json:"email"`
-    ClassID        int    `json:"class_id"`
-    RewardScore    int    `json:"reward_score"`
+    Username    string `json:"username"`
+    Email       string `json:"email"`
+    ClassID     int    `json:"class_id"`
+    RewardScore int    `json:"reward_score"`
+}
+
+// hashPassword hashes a password using bcrypt
+func hashPassword(password string) string {
+    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+    if err != nil {
+        log.Fatalf("Failed to hash password: %v", err)
+    }
+    return string(hashedPassword)
 }
 
 // GenerateFakeData generates and inserts fake data into the database
 func GenerateFakeData(db *gorm.DB) {
     log.Println("Starting to generate fake data...")
 
-    rand.Seed(time.Now().UnixNano()) // Seed for random number generation
+    // Seed for random number generation
+    rand.Seed(time.Now().UnixNano()) 
 
-    batchSize := 10000      // Number of records to log progress
-    totalAccounts := 100000 // Total number of accounts to generate
+    batchSize := 10       // Number of records to log progress
+    totalAccounts := 100  // Total number of accounts to generate
+    defaultPassword := "ricrym"
+    default2FAKey := "1234"
     usedEmails := make(map[string]bool) // Track unique emails
-    testAccountCount := 100 // Number of accounts with "test" usernames
+    testAccountCount := 100             // Number of accounts with "test" usernames
 
-    // Generate accounts with predictable usernames (e.g., "test1", "test2")
+    // Define score ranges based on class_id
+    scoreRanges := map[int][2]int{
+        1: {0, 100},
+        2: {101, 200},
+        3: {201, 300},
+        4: {301, 400},
+        5: {401, 500},
+        6: {501, 600},
+        7: {601, 700},
+        8: {701, 800},
+    }
+
+    // Generate test accounts first
     for i := 1; i <= testAccountCount; i++ {
         email := fmt.Sprintf("test%d@example.com", i)
 
         account := Account{
-            Username: fmt.Sprintf("test%d", i), // Predictable username
-            Email:    email,
+            Username:         fmt.Sprintf("test%d", i),
+            Email:            email,
+            EncryptedPassword: hashPassword(defaultPassword),
+            SecretKey2FA:      default2FAKey,
         }
 
         // Insert account into the database
@@ -65,20 +102,25 @@ func GenerateFakeData(db *gorm.DB) {
         }
 
         // Generate and insert character data for each test account
+        classID := uint(rand.Intn(8) + 1) // Random class ID between 1 and 8
         character := Character{
             AccID:   account.AccID,
-            ClassID: uint(rand.Intn(8) + 1), // Random class ID between 1 and 8
-            Name:    fmt.Sprintf("Test Character %d", i), // Predictable character name
+            ClassID: classID,
+            Name:    fmt.Sprintf("Test Character %d", i),
         }
         if err := db.Create(&character).Error; err != nil {
             log.Printf("Failed to insert test character: %v\n", err)
             continue
         }
 
+        // Generate the score based on class_id
+        scoreRange := scoreRanges[int(classID)]
+        rewardScore := rand.Intn(scoreRange[1]-scoreRange[0]+1) + scoreRange[0]
+
         // Generate and insert score data for each character
         score := Score{
             CharID:      character.CharID,
-            RewardScore: rand.Intn(10000), // Random score between 0 and 1000
+            RewardScore: rewardScore,
         }
         if err := db.Create(&score).Error; err != nil {
             log.Printf("Failed to insert test score: %v\n", err)
@@ -100,8 +142,10 @@ func GenerateFakeData(db *gorm.DB) {
 
         // Generate random account
         account := Account{
-            Username: faker.Username(),
-            Email:    email,
+            Username:         faker.Username(),
+            Email:            email,
+            EncryptedPassword: hashPassword(defaultPassword),
+            SecretKey2FA:      default2FAKey,
         }
 
         // Insert account into the database
@@ -110,10 +154,13 @@ func GenerateFakeData(db *gorm.DB) {
             continue
         }
 
-        // Generate and insert character data for each account
+        // Generate random class ID between 1 and 8
+        classID := uint(rand.Intn(8) + 1)
+
+        // Generate and insert character data for each random account
         character := Character{
             AccID:   account.AccID,
-            ClassID: uint(rand.Intn(8) + 1), // Random class ID between 1 and 8
+            ClassID: classID,
             Name:    faker.Name(),
         }
         if err := db.Create(&character).Error; err != nil {
@@ -121,10 +168,14 @@ func GenerateFakeData(db *gorm.DB) {
             continue
         }
 
-        // Generate and insert score data for each character
+        // Generate the score based on class_id
+        scoreRange := scoreRanges[int(classID)]
+        rewardScore := rand.Intn(scoreRange[1]-scoreRange[0]+1) + scoreRange[0]
+
+        // Generate and insert score data for each random character
         score := Score{
             CharID:      character.CharID,
-            RewardScore: rand.Intn(10000), // Random score between 0 and 1000
+            RewardScore: rewardScore,
         }
         if err := db.Create(&score).Error; err != nil {
             log.Printf("Failed to insert random score: %v\n", err)
