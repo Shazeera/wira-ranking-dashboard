@@ -1,17 +1,33 @@
 <template>
   <div id="app">
-    <AppDashboard />  <!-- Add this line to use the component -->
+    <!-- Conditionally render the LoginPage or AppDashboard based on isLoggedIn -->
+    <LoginPage v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+    <AppDashboard v-else />
   </div>
 </template>
 
 <script>
-// Import the AppDashboard component
-import AppDashboard from './components/AppDashboard.vue';  
+// Import the components
+import AppDashboard from './components/AppDashboard.vue';
+import LoginPage from './components/LoginPage.vue';
+
 
 export default {
   name: 'App',
   components: {
-    AppDashboard,  // Register it as a component
+    AppDashboard,
+    LoginPage
   },
+  data() {
+    return {
+      isLoggedIn: false // Track the login status
+    };
+  },
+  methods: {
+    // Handle successful login and update the login status
+    handleLoginSuccess() {
+      this.isLoggedIn = true;
+    }
+  }
 };
 </script>
